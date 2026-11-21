@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // غرفة اللعب: أي لاعب مسجّل (دخول مجهول) يقرأ ويكتب، ولا أحد يحذفها.
+    match /games/{code} {
+      allow read, create, update: if request.auth != null;
+      allow delete: if false;
+
+      // ملف كل لاعب: يكتبه صاحبه فقط. ويحذفه صاحبه أو مضيف الغرفة (للإخراج).
+      match /players/{uid} {
+        allow read: if request.auth != null;
+        allow create, update: if request.auth != null && request.auth.uid == uid;
+        allow delete: if request.auth != null && (
+          request.auth.uid == uid ||
+          get(/databases/$(database)/documents/games/$(code)).data.hostId == request.auth.uid
+        );
+      }
+    }
+  }
+}

@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#12151a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>كلمات دراكون السرية</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Tajawal:wght@400;500;700&display=swap">
+<style>
+/* Layout: one centered column (max 640px). Entry screen -> room (picker + settings/lobby or board). 5x5 tile grid is the centerpiece; reactions pop over it. */
+:root {
+  --bg: #eceff3;
+  --surface: #ffffff;
+  --surface-2: #e1e6ed;
+  --fg: #161b22;
+  --muted: #566170;
+  --line: #cdd5df;
+  --red: #c63d33;
+  --red-ink: #ffffff;
+  --red-soft: #f7dcd9;
+  --blue: #2a6cb3;
+  --blue-ink: #ffffff;
+  --blue-soft: #d5e5f6;
+  --sand: #d9ccb0;
+  --sand-ink: #2a2418;
+  --dark: #1b1d22;
+  --dark-ink: #f2f2f2;
+  --good: #1d7a46;
+  --good-ink: #ffffff;
+  --ouch: #b45309;
+  --ouch-ink: #ffffff;
+  --btn: #202833;
+  --btn-ink: #ffffff;
+  --focus: #2a6cb3;
+  --display: "Reem Kufi", "Segoe UI", Tahoma, sans-serif;
+  --body: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --surface: #1c2128; --surface-2: #272e38; --fg: #eceff4; --muted: #9ba7b7; --line: #333b47;
+    --red: #c94a40; --red-ink: #ffffff; --red-soft: #3a2421;
+    --blue: #3a78bd; --blue-ink: #ffffff; --blue-soft: #1f2f43;
+    --sand: #51493b; --sand-ink: #ece6d4;
+    --dark: #050506; --dark-ink: #f2f2f2;
+    --good: #23814b; --good-ink: #ffffff; --ouch: #b45309; --ouch-ink: #ffffff;
+    --btn: #e8ecf2; --btn-ink: #161b22; --focus: #7db0ea;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --surface: #1c2128; --surface-2: #272e38; --fg: #eceff4; --muted: #9ba7b7; --line: #333b47;
+  --red: #c94a40; --red-ink: #ffffff; --red-soft: #3a2421;
+  --blue: #3a78bd; --blue-ink: #ffffff; --blue-soft: #1f2f43;
+  --sand: #51493b; --sand-ink: #ece6d4;
+  --dark: #050506; --dark-ink: #f2f2f2;
+  --good: #23814b; --good-ink: #ffffff; --ouch: #b45309; --ouch-ink: #ffffff;
+  --btn: #e8ecf2; --btn-ink: #161b22; --focus: #7db0ea;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 16px; line-height: 1.55;
+  direction: rtl; text-align: right;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  min-height: 100%;
+}
+#app { max-width: 640px; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
+h1, h2 { font-family: var(--display); font-weight: 700; margin: 0; text-wrap: balance; }
+h1 { font-size: 34px; line-height: 1.2; }
+h2 { font-size: 20px; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+[hidden] { display: none !important; }
+
+.badge { display: inline-block; font-family: var(--body); font-size: 13px; font-weight: 700; padding: 0 10px; border-radius: 99px; background: var(--dark); color: var(--dark-ink); vertical-align: middle; margin-inline-start: 8px; letter-spacing: .02em; }
+.credit { text-align: center; font-size: 13px; color: var(--muted); padding-top: 4px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.logo { display: grid; grid-template-columns: repeat(3, 12px); gap: 3px; flex: none; }
+.logo i { width: 12px; height: 12px; border-radius: 3px; background: var(--sand); }
+.logo i.r { background: var(--red); } .logo i.b { background: var(--blue); } .logo i.k { background: var(--dark); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+label { font-weight: 700; font-size: 14px; }
+input[type="text"], input[type="number"], select, textarea {
+  width: 100%; min-width: 0; font: inherit; color: var(--fg); background: var(--bg);
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 10px 12px;
+}
+textarea { min-height: 84px; resize: vertical; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
+select:disabled, textarea:disabled { opacity: .6; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch; }
+.row > * { min-width: 0; }
+.grow { flex: 1 1 140px; }
+label.check { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; }
+label.check input { width: 18px; height: 18px; margin: 0; }
+
+.btn {
+  font: inherit; font-weight: 700; cursor: pointer; border-radius: 8px; padding: 10px 16px;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--fg);
+}
+.btn.primary { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.ghost { background: transparent; }
+.btn.tiny { padding: 4px 10px; font-size: 13px; }
+
+details { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--surface); }
+summary { cursor: pointer; font-weight: 700; }
+details ol { margin: 10px 0 2px; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+.roomhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.code { font-family: var(--display); font-size: 30px; letter-spacing: .18em; direction: ltr; unicode-bidi: isolate; padding: 2px 12px; background: var(--surface-2); border-radius: 8px; }
+
+.picker { display: flex; flex-direction: column; gap: 8px; }
+.pickrow { display: flex; align-items: center; gap: 8px; }
+.pickrow .tm { flex: 1 1 auto; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.btns { display: flex; gap: 8px; }
+.dot { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+.dot.r { background: var(--red); } .dot.b { background: var(--blue); }
+.pick { font: inherit; font-weight: 700; cursor: pointer; border-radius: 8px; padding: 8px 14px; min-width: 84px; background: var(--surface); color: var(--fg); border: 2px solid var(--line); }
+.pick.r { border-color: var(--red); } .pick.b { border-color: var(--blue); }
+.pick.r.on { background: var(--red); color: var(--red-ink); }
+.pick.b.on { background: var(--blue); color: var(--blue-ink); }
+.pick:disabled { opacity: .4; cursor: not-allowed; }
+
+.scoreline { display: flex; justify-content: center; gap: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.scoreline span { padding: 0 12px; border-radius: 99px; background: var(--surface); }
+.scoreline .sr { border: 2px solid var(--red); } .scoreline .sb { border: 2px solid var(--blue); }
+
+.teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.team { border-radius: 10px; padding: 12px; min-width: 0; border: 2px solid var(--line); }
+.team.r { border-color: var(--red); background: var(--red-soft); }
+.team.b { border-color: var(--blue); background: var(--blue-soft); }
+.team h2 { font-size: 17px; margin-bottom: 6px; }
+ul.pl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+ul.pl li { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; overflow-wrap: anywhere; }
+.tag { font-size: 12px; font-weight: 700; padding: 0 7px; border-radius: 99px; background: var(--surface); color: var(--fg); border: 1px solid var(--line); }
+.bench { font-size: 14px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1.5px solid var(--line); border-radius: 99px; font-size: 14px; font-weight: 500; background: var(--surface); cursor: pointer; }
+.chip input { margin: 0; }
+.chip.on { border-color: var(--fg); background: var(--surface-2); }
+.chip.dis { opacity: .7; cursor: default; }
+
+.turnbar { border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; background: var(--surface-2); }
+.turnbar.t-r { background: var(--red); color: var(--red-ink); }
+.turnbar.t-b { background: var(--blue); color: var(--blue-ink); }
+.timer { font-variant-numeric: tabular-nums; }
+.timer.low { animation: pulse .8s ease-in-out infinite alternate; }
+.counts { display: flex; gap: 8px; font-variant-numeric: tabular-nums; }
+.counts span { padding: 0 10px; border-radius: 99px; background: var(--surface); color: var(--fg); }
+.counts .cr { border: 2px solid var(--red); } .counts .cb { border: 2px solid var(--blue); }
+
+.cluebox { text-align: center; font-size: 18px; }
+.cluebox b { font-family: var(--display); font-size: 26px; }
+
+.grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; perspective: 900px; }
+.card {
+  min-height: 60px; padding: 6px 3px; border-radius: 8px; border: 2px solid var(--line);
+  background: var(--surface); color: var(--fg); font-family: var(--body); font-weight: 700;
+  font-size: clamp(12px, 3.4vw, 17px); line-height: 1.25; text-align: center; overflow-wrap: anywhere;
+  display: flex; align-items: center; justify-content: center; cursor: default;
+  transition: transform .12s ease;
+}
+.card.live { cursor: pointer; }
+.card.live:hover { transform: translateY(-2px); border-color: var(--fg); }
+.card.hint-r { border-color: var(--red); background: var(--red-soft); }
+.card.hint-b { border-color: var(--blue); background: var(--blue-soft); }
+.card.hint-n { border-color: var(--sand); }
+.card.hint-a { border-color: var(--dark); background: var(--dark); color: var(--dark-ink); }
+.card.dim { opacity: .72; }
+.card.c-r { background: var(--red); border-color: var(--red); color: var(--red-ink); }
+.card.c-b { background: var(--blue); border-color: var(--blue); color: var(--blue-ink); }
+.card.c-n { background: var(--sand); border-color: var(--sand); color: var(--sand-ink); }
+.card.c-a { background: var(--dark); border-color: var(--dark); color: var(--dark-ink); }
+.card.flipnew { animation: flipIn .75s cubic-bezier(.3, 1.3, .5, 1) both; }
+@keyframes flipIn { 0% { transform: rotateY(-180deg) scale(.85); } 100% { transform: rotateY(0) scale(1); } }
+@keyframes pulse { from { opacity: 1; } to { opacity: .45; } }
+
+.awards { list-style: none; margin: 0; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-weight: 500; }
+.status { font-size: 15px; text-align: center; color: var(--muted); }
+.banner { border-radius: 10px; padding: 14px; text-align: center; font-family: var(--display); font-size: 22px; background: var(--surface-2); }
+.banner.t-r { background: var(--red); color: var(--red-ink); }
+.banner.t-b { background: var(--blue); color: var(--blue-ink); }
+.banner small { display: block; font-family: var(--body); font-size: 14px; font-weight: 400; }
+ul.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+button.kick { font: inherit; font-size: 12px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 99px; padding: 0 8px; }
+
+.react { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 30; padding: 16px; }
+.bubble {
+  max-width: min(92vw, 420px); text-align: center; padding: 18px 24px; border-radius: 18px;
+  font-family: var(--display); font-size: clamp(22px, 6.5vw, 32px); line-height: 1.3;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .4); animation: popIn .4s cubic-bezier(.2, 1.5, .4, 1) both;
+}
+.bubble small { display: block; font-family: var(--body); font-size: 14px; font-weight: 500; opacity: .92; margin-top: 4px; }
+.bubble.own { background: var(--good); color: var(--good-ink); }
+.bubble.opp { background: var(--ouch); color: var(--ouch-ink); }
+.bubble.neutral { background: var(--sand); color: var(--sand-ink); }
+.bubble.assassin { background: var(--dark); color: var(--dark-ink); border: 2px solid var(--red); }
+@keyframes popIn { from { transform: scale(.4) rotate(-7deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  max-width: min(92vw, 460px); background: var(--btn); color: var(--btn-ink); padding: 10px 16px; border-radius: 10px; font-weight: 700; z-index: 40; text-align: center;
+}
+@media (max-width: 420px) { .teams { grid-template-columns: 1fr; } .pick { min-width: 70px; padding-inline: 10px; } }
+@media (prefers-reduced-motion: reduce) {
+  .card, .bubble, .timer.low { animation: none !important; transition: none; }
+  .card.live:hover { transform: none; }
+}
+
+:root{color-scheme:light}
+html,body{margin:0}
+body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,env(safe-area-inset-bottom,0px))}
+</style>
+</head>
+<body>
+<div id="app" lang="ar" dir="rtl">
+  <header class="brand">
+    <div class="logo" aria-hidden="true"><i class="r"></i><i></i><i class="b"></i><i></i><i class="k"></i><i></i><i class="b"></i><i></i><i class="r"></i></div>
+    <div>
+      <h1>كلمات سرية<span class="badge">نسخة دراكون</span></h1>
+      <p class="muted small">لعبة فريقين أونلاين: القادة يعطون التلميحات والعملاء يخمنون… وغلطة وحدة تفضحكم</p>
+    </div>
+  </header>
+
+  <!-- Entry -->
+  <section id="entry" class="panel">
+    <div class="field">
+      <label for="nameIn">اسمك</label>
+      <input id="nameIn" type="text" maxlength="20" placeholder="مثال: حسين" autocomplete="nickname">
+    </div>
+    <div class="row">
+      <button id="createBtn" class="btn primary grow" type="button" disabled>إنشاء غرفة جديدة</button>
+    </div>
+    <div class="field">
+      <label for="codeIn">أو ادخل غرفة صديق برمزها</label>
+      <div class="row">
+        <input id="codeIn" class="grow" type="text" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off" style="direction:ltr;text-align:center;letter-spacing:.2em;text-transform:uppercase">
+        <button id="joinBtn" class="btn" type="button" disabled>دخول</button>
+      </div>
+    </div>
+    <p id="dbNote" class="small muted" role="status">جارٍ الاتصال…</p>
+    <details>
+      <summary>كيف نلعب؟</summary>
+      <ol>
+        <li>انقسموا إلى فريقين: أحمر وأزرق. في كل فريق قائد والباقي عملاء، والقائد يتبدل كل جولة.</li>
+        <li>القائد وحده يرى ألوان الكلمات الـ25. يعطي فريقه تلميحاً من كلمة واحدة وعدداً، مثل «نهر 2».</li>
+        <li>العملاء يخمنون. كلمة فريقك: «عاشت ايدك». بيضة محايدة: «ثول». كلمة الخصم: «طاح حظك». والسوداء: «سوّد الله وجهك».</li>
+        <li>الفريق الذي يكشف كل كلماته أولاً يفوز.</li>
+      </ol>
+    </details>
+  </section>
+
+  <!-- Room -->
+  <section id="room" hidden>
+    <div class="panel">
+      <div class="roomhead">
+        <div>
+          <div class="small muted">رمز الغرفة</div>
+          <div class="code" id="codeShow">----</div>
+        </div>
+        <div class="row">
+          <button id="soundBtn" class="btn ghost" type="button">التنبيهات: تشغيل</button>
+          <button id="shareBtn" class="btn primary" type="button">مشاركة الدعوة</button>
+          <button id="copyBtn" class="btn" type="button">نسخ الرمز</button>
+          <button id="leaveBtn" class="btn ghost" type="button">خروج</button>
+        </div>
+      </div>
+      <p class="small muted">اضغط «مشاركة الدعوة» وأرسل الرابط لأصدقائك على واتساب أو تلغرام، وهم يدخلون الغرفة مباشرة.</p>
+
+      <div id="picker" class="picker" aria-label="اختيار الفريق والدور">
+        <div class="pickrow"><span class="tm"><span class="dot r"></span>الفريق الأحمر</span><span class="btns" id="pk-r"></span></div>
+        <div class="pickrow"><span class="tm"><span class="dot b"></span>الفريق الأزرق</span><span class="btns" id="pk-b"></span></div>
+      </div>
+    </div>
+
+    <p id="scoreLine" class="scoreline" hidden style="margin-top:12px"></p>
+    <p id="roomMsg" class="status" role="status" hidden></p>
+
+    <!-- Lobby -->
+    <div id="lobby" class="panel" hidden style="margin-top:16px">
+      <div class="teams">
+        <div class="team r"><h2>الأحمر</h2><ul id="listR" class="pl"></ul></div>
+        <div class="team b"><h2>الأزرق</h2><ul id="listB" class="pl"></ul></div>
+      </div>
+      <p class="bench"><span class="muted">بدون فريق بعد:</span> <span id="listN"></span></p>
+
+      <div class="field">
+        <label>أنواع الكلمات</label>
+        <div id="catChips" class="chips"></div>
+      </div>
+      <div class="field">
+        <label>ثيمات خاصة (اختياري)</label>
+        <div id="themeChips" class="chips"></div>
+      </div>
+      <div class="row">
+        <div class="field grow"><label for="levelSel">الصعوبة</label>
+          <select id="levelSel"><option value="easy">سهل (كلمات متفرقة)</option><option value="normal">عادي</option><option value="hard">صعب (كلمات متقاربة)</option></select></div>
+        <div class="field grow"><label for="timerSel">مؤقت الدور</label>
+          <select id="timerSel"><option value="0">بدون</option><option value="60">60 ثانية</option><option value="90">90 ثانية</option><option value="120">120 ثانية</option></select></div>
+      </div>
+      <label class="check"><input id="rotateChk" type="checkbox"> تدوير القائد تلقائياً كل جولة</label>
+
+      <div id="hostBox" class="field" hidden>
+        <details>
+          <summary>كلمات من عندك (اختياري)</summary>
+          <div class="field" style="margin-top:10px">
+            <label for="customIn">اكتب كلمات، كل كلمة في سطر. نحفظها لك ونكمل الباقي من قائمتنا.</label>
+            <textarea id="customIn" placeholder="مثال:&#10;دولمة&#10;مسكوف&#10;بغداد"></textarea>
+          </div>
+        </details>
+        <button id="startBtn" class="btn primary" type="button" disabled>ابدأ اللعبة</button>
+        <button id="testBtn" class="btn ghost" type="button">تجربة لوحدي (بدون لاعبين آخرين)</button>
+        <p id="startHint" class="small muted"></p>
+      </div>
+      <p id="waitHost" class="status" hidden>بانتظار المضيف ليبدأ اللعبة. اشرب شاي لحد ما يجهز ☕</p>
+    </div>
+
+    <!-- Board -->
+    <div id="board" hidden style="margin-top:16px; display:flex; flex-direction:column; gap:12px">
+      <div id="turnBar" class="turnbar"><span id="turnTxt"></span><span id="timerTxt" class="timer"></span><span class="counts"><span class="cr" id="cntR"></span><span class="cb" id="cntB"></span></span></div>
+      <p id="meLine" class="status"></p>
+      <div id="clueBox" class="cluebox" hidden></div>
+      <div id="winBanner" class="banner" hidden></div>
+      <ul id="awards" class="awards" hidden></ul>
+      <div id="grid" class="grid"></div>
+      <form id="clueForm" class="panel" hidden>
+        <div class="row">
+          <div class="field grow"><label for="clueWord">التلميح (كلمة واحدة)</label><input id="clueWord" type="text" maxlength="24" autocomplete="off"></div>
+          <div class="field" style="flex:0 0 96px"><label for="clueNum">العدد</label>
+            <select id="clueNum"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option value="0">0</option></select></div>
+        </div>
+        <button class="btn primary" type="submit">أرسل التلميح</button>
+      </form>
+      <button id="endTurnBtn" class="btn" type="button" hidden>أنهِ الدور</button>
+      <button id="againBtn" class="btn primary" type="button" hidden>جولة جديدة</button>
+      <button id="backLobbyBtn" class="btn ghost" type="button" hidden>العودة للردهة (تغيير الإعدادات)</button>
+      <p id="hint" class="status"></p>
+      <ul id="log" class="log"></ul>
+    </div>
+  </section>
+  <p class="credit">صُنعت بواسطة دراكون 🐉</p>
+</div>
+<div id="react" class="react" role="status" hidden></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var TEAM = { r: "الأحمر", b: "الأزرق" };
+  var CATS = [
+    { id: "animals", name: "حيوانات", w: "أسد نمر فيل زرافة قرد ذئب ثعلب دب أرنب فأر قط كلب حصان جمل حمار بقرة خروف ماعز جاموس" },
+    { id: "birds", name: "طيور وحشرات", w: "دجاجة بطة نسر صقر حمامة بومة غراب عصفور ببغاء نحلة فراشة نملة عنكبوت ذبابة عقرب ثعبان ضفدع" },
+    { id: "water", name: "ماء وبحر", w: "سمكة حوت قرش دولفين أخطبوط سلحفاة تمساح بحر ميناء سفينة قارب شط جزيرة بحيرة نهر دجلة فرات هور" },
+    { id: "food", name: "طعام", w: "تمر شاي قهوة تمن سمك خبز تنور عسل سكر ملح حليب جبن لبن زيتون دولمة كبة كباب مسكوف شوربة حلوى كيك بسكويت شوكولاتة" },
+    { id: "fruit", name: "فواكه وخضار", w: "رمان عنب تفاح برتقال ليمون موز بطيخ تين خيار طماطم بصل ثوم فلفل باذنجان نخلة زيتون" },
+    { id: "nature", name: "طبيعة وطقس", w: "شجرة وردة عشب غابة صحراء جبل وادي سماء نجمة قمر شمس غيمة مطر ثلج رعد برق ريح عاصفة نار تراب حجر" },
+    { id: "travel", name: "سفر وطرق", w: "سيارة حافلة قطار طائرة دراجة شاحنة مطار محطة تذكرة حقيبة خريطة بوصلة شارع طريق رصيف إشارة جسر" },
+    { id: "school", name: "مدرسة وكتب", w: "قلم كتاب مدرسة معلم طالب سبورة مكتبة جامعة ورق قصيدة قصة جريدة رسالة بريد طابع لوحة" },
+    { id: "health", name: "صحة", w: "مستشفى طبيب ممرضة دواء إبرة سرير وسادة بطانية" },
+    { id: "home", name: "بيت ومطبخ", w: "مفتاح باب نافذة سقف جدار سلم مصعد قفل مرآة مصباح شمعة سجادة فانوس سكين شوكة ملعقة صحن كوب إبريق قدر مقلاة فرن ثلاجة" },
+    { id: "tools", name: "أدوات ومواد", w: "مطرقة منشار مفك فأس مسمار سلك بطارية كهرباء حديد نحاس خشب زجاج حجر" },
+    { id: "tech", name: "تقنية", w: "هاتف شاشة حاسوب كاميرا صورة ساعة منبه بطارية كهرباء سلك مصباح" },
+    { id: "clothes", name: "ملابس وزينة", w: "عباءة عمامة خاتم تاج قلادة حذاء قبعة قميص جورب حزام مظلة نظارة عطر صابون مشط فرشاة ذهب فضة" },
+    { id: "fantasy", name: "خيال وحكايات", w: "ملك أميرة فارس جندي ساحر تنين عملاق قزم ملاك شيطان جني شبح كابوس حلم كنز سيف درع قلعة تاج" },
+    { id: "law", name: "قانون وحرب", w: "شرطي قاضي سجن لص جاسوس سر رمز شفرة لغز قفل جيش حرب سلام دبابة صاروخ حدود علم وطن قائد" },
+    { id: "market", name: "سوق ومال", w: "سوق دكان بائع نقود دينار بنك ذهب فضة كنز بوصلة" },
+    { id: "music", name: "فن ولعب", w: "طبل عود ناي قيثارة مسرح فيلم كرة لعبة شطرنج نرد لوحة تمثال" },
+    { id: "space", name: "فضاء", w: "فضاء كوكب مذنب مجرة قمر نجمة شمس صاروخ" },
+    { id: "iraq", name: "عراقيات", w: "بغداد دجلة فرات نخلة تمر شاي تمن جاموس هور قصب تنور دولمة مسكوف كبة عباءة" },
+    { id: "ramadan", name: "🌙 رمضان والعيد", theme: true, w: "هلال مدفع سحور إفطار قطايف زلابية صيام تراويح مسحراتي عيدية عيد كليجة مسبحة مصحف مسجد مئذنة صدقة زكاة فانوس موائد" },
+    { id: "football", name: "⚽ كرة القدم", theme: true, w: "ملعب هدف حكم ركلة حارس مهاجم مدافع كأس بطولة جمهور صافرة بطاقة تسلل زاوية رأسية مدرب منتخب قميص شباك تحكيم" },
+    { id: "wedding", name: "💍 أعراس ومناسبات", theme: true, w: "عروس عريس فستان خاتم زفة دبكة هوسة فرح دعوة هدية كعكة مهر خطوبة حنة عقد ضيوف قاعة بشت مباركة" },
+    { id: "cities", name: "🏙️ مدن عراقية", theme: true, w: "البصرة الموصل أربيل النجف كربلاء كركوك السليمانية الأنبار ديالى واسط ميسان دهوك سامراء بابل الحلة الناصرية العمارة الكوت بغداد" },
+    { id: "social", name: "📱 سوشيال ميديا", theme: true, w: "واتساب تلغرام فيسبوك إنستغرام تيكتوك يوتيوب ستوري بث متابع لايك تعليق هاشتاغ إشعار رسالة مجموعة سيلفي ترند فيديو" },
+    { id: "jobs", name: "👷 مهن", theme: true, w: "طباخ نجار حداد خياط سائق معلم مهندس محاسب صيدلي حلاق خباز فلاح صياد راعي بائع رسام مصور مذيع كاتب" },
+    { id: "hunter", name: "🏹 تيم الصياد", theme: true, all: true, l: ["عجينة", "الصياد", "دراكون", "ابوشبوكي", "خشوب", "باندا", "انفور", "حسن هاشم", "حمودي اياد"] }
+  ].map(function (c) { return { id: c.id, name: c.name, theme: !!c.theme, all: !!c.all, words: c.l || c.w.split(/\s+/) }; });
+  var LEVELS = { easy: { t: 8, p: 3 }, normal: { t: 5, p: 4 }, hard: { t: 3, p: 7 } };
+
+  var SAY = {
+    own: ["عاشت ايدك!", "ضربة معلم!", "الله على الذكاء!", "يابه شلون عرفتها!"],
+    neutral: ["ثول! بيضة!", "ثول والله!", "هاي بيضة يا عبقري!", "بيضة… وحاسب على نفسك"],
+    opp: ["طاح حظك!", "هدية للخصم، مشكور!", "طاح حظك، والخصم يضحك عليك", "كل هذا وتجيب كلمة الخصم؟"],
+    assassin: ["سوّد الله وجهك!", "سوّد الله وجهك، خسّرتهم!", "الله يسامحك… بس سوّد وجهك", "القاتل! يا ويلي"]
+  };
+  var EMO = { own: "🎉", neutral: "🥚", opp: "😬", assassin: "💀" };
+  var WIN_ALL = ["عاشت إيدكم يا أبطال!", "ضربة معلم من الفريق كله", "كشفتوا كل كلماتكم وما خليتوا شي"];
+  var WIN_A = ["الخصم سوّد وجهه والفوز إلكم", "القاتل خدمكم هالمرة", "من يلعب بالنار يسوّد وجهه"];
+
+  var db = null, user = null, uid = null, canWrite = true;
+  var code = null, game = null, players = {}, unsubs = [], busy = false, loadTimer = null, toastTimer = null, reactTimer = null;
+  var seenMe = false, seenAt = null, lastKey = null, prevRev = null, prevRound = null, customInit = false, timeoutKey = null;
+  var soundOn = true, actx = null, baseTitle = document.title;
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function lsGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function toast(msg) {
+    var t = $("toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 4200);
+  }
+  function fail(e) {
+    var c = e && e.code;
+    toast(c === "permission-denied" ? "رُفض الطلب. تأكد من نشر قواعد Firestore (الخطوة 4)." : "تعذّر الاتصال. جرّب مرة ثانية.");
+  }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function uniq(a) { var s = {}, out = []; a.forEach(function (x) { if (!s[x]) { s[x] = 1; out.push(x); } }); return out; }
+  function genCode() { var s = ""; for (var i = 0; i < 4; i++) s += ALPHA.charAt(Math.floor(Math.random() * ALPHA.length)); return s; }
+  function say(k) { var a = SAY[k]; return a[Math.floor(Math.random() * a.length)]; }
+  function allCatIds() { return CATS.filter(function (c) { return !c.theme; }).map(function (c) { return c.id; }); }
+  function expireTs(ms) {
+    var t = Date.now() + ms;
+    try { if (window.firebase && firebase.firestore && firebase.firestore.Timestamp) return firebase.firestore.Timestamp.fromMillis(t); } catch (e) {}
+    return t;
+  }
+  function endsAtFor(g) { return g && g.timer > 0 ? Date.now() + g.timer * 1000 : null; }
+  function gref() { return db.doc("games/" + code); }
+  function pref() { return db.collection("games/" + code + "/players").doc(uid); }
+  function readName() {
+    var n = $("nameIn").value.trim();
+    if (!n) { toast("اكتب اسمك أولاً"); $("nameIn").focus(); return ""; }
+    lsSet("ks-name", n); return n;
+  }
+
+  /* Board words come from a few themes, so one clue can fit several tiles and some of them belong to the other team. */
+  function pickWords(custom, catIds, level) {
+    var cfg = LEVELS[level] || LEVELS.normal, used = {}, out = [];
+    function add(w) { if (!used[w] && out.length < 25) { used[w] = 1; out.push(w); return true; } return false; }
+    shuffle(custom).slice(0, 25).forEach(add);
+    var chosen = CATS.filter(function (c) { return catIds.indexOf(c.id) >= 0; });
+    /* a "team" theme puts all of its words on the board, then the rest come from the other chosen groups */
+    chosen.filter(function (c) { return c.all; }).forEach(function (c) { c.words.forEach(add); });
+    chosen = chosen.filter(function (c) { return !c.all; });
+    if (!chosen.length) chosen = CATS.filter(function (c) { return !c.theme; });
+    var cats = shuffle(chosen), ci = 0;
+    while (out.length < 25 && ci < cats.length) {
+      var want = ci < cfg.t ? cfg.p : 1, got = 0;
+      shuffle(cats[ci].words).forEach(function (w) { if (got < want && add(w)) got++; });
+      ci++;
+    }
+    var flat = function (list) { return list.reduce(function (a, c) { return a.concat(c.words); }, []); };
+    if (out.length < 25) shuffle(flat(chosen)).forEach(add);
+    if (out.length < 25) shuffle(flat(CATS)).forEach(add);
+    return shuffle(out);
+  }
+
+  /* ---------- sound, vibration, attention ---------- */
+  function ac() {
+    try {
+      if (!actx) { var C = window.AudioContext || window.webkitAudioContext; if (C) actx = new C(); }
+      if (actx && actx.state === "suspended") actx.resume();
+    } catch (e) {}
+    return actx;
+  }
+  function beep(seq) {
+    if (!soundOn) return;
+    var a = ac(); if (!a) return;
+    try {
+      var t = a.currentTime;
+      seq.forEach(function (n, i) {
+        var o = a.createOscillator(), g = a.createGain(), s = t + i * 0.15, d = n[1] || 0.12;
+        o.type = "sine"; o.frequency.value = n[0];
+        g.gain.setValueAtTime(0.0001, s);
+        g.gain.exponentialRampToValueAtTime(0.18, s + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, s + d);
+        o.connect(g); g.connect(a.destination); o.start(s); o.stop(s + d + 0.02);
+      });
+    } catch (e) {}
+  }
+  function buzz(p) { if (!soundOn) return; try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
+  function attention() {
+    buzz([180, 80, 180]); beep([[700, 0.1], [920, 0.16]]);
+    if (document.hidden) document.title = "دورك! — " + baseTitle;
+  }
+  function setSoundBtn() { $("soundBtn").textContent = "التنبيهات: " + (soundOn ? "تشغيل" : "إيقاف"); }
+
+  /* ---------- connection (Firebase) ---------- */
+  var configMissing = false, connErr = false;
+  function setReady() {
+    var ok = !!db && !!uid;
+    $("createBtn").disabled = !ok; $("joinBtn").disabled = !ok;
+    var n = $("dbNote");
+    if (configMissing) n.textContent = "لم يتم ربط Firebase بعد. افتح ملف firebase-config.js والصق إعداداتك فيه.";
+    else if (connErr) n.textContent = "تعذّر الاتصال بالخدمة. تأكد من الإنترنت ومن تفعيل «الدخول المجهول» في Firebase.";
+    else if (!ok) n.textContent = "جارٍ الاتصال…";
+    else n.textContent = "جاهز. أنشئ غرفة أو ادخل برمز.";
+  }
+  async function init() {
+    $("nameIn").value = lsGet("ks-name");
+    soundOn = lsGet("ks-sound") !== "off"; setSoundBtn();
+    var m = /^#room-([A-Za-z0-9]{4})$/.exec(location.hash || "");
+    if (m) $("codeIn").value = m[1].toUpperCase();
+    setReady();
+    var cfg = window.FIREBASE_CONFIG;
+    if (!cfg || !cfg.apiKey || /^PASTE/.test(cfg.apiKey)) { configMissing = true; setReady(); return; }
+    if (!window.firebase) { connErr = true; setReady(); return; }
+    try {
+      firebase.initializeApp(cfg);
+      var cred = await firebase.auth().signInAnonymously();
+      uid = cred.user.uid;
+      db = firebase.firestore();
+    } catch (e) { connErr = true; }
+    setReady();
+    if (m && db && lsGet("ks-name")) joinRoom();
+  }
+
+  /* ---------- room lifecycle ---------- */
+  async function createRoom() {
+    var name = readName(); if (!name) return;
+    $("createBtn").disabled = true;
+    try {
+      var c = null;
+      for (var i = 0; i < 6 && !c; i++) {
+        var t = genCode(); var s = await db.doc("games/" + t).get();
+        if (!s.exists) c = t;
+      }
+      if (!c) { toast("تعذّر إنشاء رمز. جرّب مرة ثانية."); return; }
+      await db.doc("games/" + c).set({
+        code: c, hostId: uid, phase: "lobby", round: 0, custom: [], cats: allCatIds(), level: "normal", timer: 0,
+        rotate: true, test: false, score: { r: 0, b: 0 }, last: null, at: Date.now(), expireAt: expireTs(48 * 3600 * 1000)
+      });
+      await enter(c, name);
+    } catch (e) { fail(e); } finally { setReady(); }
+  }
+  async function joinRoom() {
+    var name = readName(); if (!name) return;
+    var c = $("codeIn").value.trim().toUpperCase();
+    if (c.length !== 4) { toast("الرمز مكوّن من 4 خانات"); $("codeIn").focus(); return; }
+    $("joinBtn").disabled = true;
+    try { await enter(c, name); } catch (e) { fail(e); } finally { setReady(); }
+  }
+  async function enter(c, name) {
+    var s = await db.doc("games/" + c).get();
+    if (!s.exists) { toast("ما لقينا هذه الغرفة. تأكد من الرمز."); return; }
+    code = c; game = null; players = {};
+    seenMe = false; seenAt = null; lastKey = null; prevRev = null; prevRound = null; customInit = false; timeoutKey = null;
+    var mine = await pref().get();
+    if (mine.exists) { if (mine.data().name !== name) await pref().update({ name: name }); }
+    else await pref().set({ name: name, team: null, role: null, at: Date.now(), expireAt: expireTs(48 * 3600 * 1000) });
+    try { location.hash = "room-" + c; } catch (e) {}
+    subscribe();
+    render();
+  }
+  function subscribe() {
+    clearTimeout(loadTimer);
+    $("roomMsg").textContent = "جارٍ تحميل الغرفة… لا تستعجل"; $("roomMsg").hidden = false;
+    loadTimer = setTimeout(function () { if (!game) { $("roomMsg").textContent = "الاتصال بطيء. ننتظر ردّ الخادم…"; $("roomMsg").hidden = false; } }, 10000);
+    var err = function (e) { $("roomMsg").textContent = "انقطع الاتصال بالغرفة. أعد فتح الصفحة."; $("roomMsg").hidden = false; };
+    unsubs.push(gref().onSnapshot(function (s) { game = s.exists ? s.data() : null; render(); }, err));
+    unsubs.push(db.collection("games/" + code + "/players").onSnapshot(function (q) {
+      var p = {}; q.docs.forEach(function (d) { p[d.id] = d.data(); }); players = p;
+      if (players[uid]) seenMe = true;
+      else if (seenMe && code) { toast("المضيف أخرجك من الغرفة"); leaveRoom(true); return; }
+      render();
+    }, err));
+  }
+  async function leaveRoom(skipDelete) {
+    var c = code;
+    unsubs.forEach(function (u) { try { u(); } catch (e) {} }); unsubs = [];
+    clearTimeout(loadTimer);
+    try { if (!skipDelete && db && c) await db.collection("games/" + c + "/players").doc(uid).delete(); } catch (e) {}
+    code = null; game = null; players = {};
+    try { location.hash = ""; } catch (e) {}
+    render();
+  }
+
+  /* ---------- roles ---------- */
+  function members(team) {
+    return Object.keys(players).filter(function (id) { return players[id].team === team; })
+      .sort(function (a, b) { return ((players[a].at || 0) - (players[b].at || 0)) || (a < b ? -1 : 1); });
+  }
+  function rotating() { return !!game && !game.test && game.rotate !== false; }
+  function roleOf(id) {
+    var p = players[id]; if (!p || !p.team) return null;
+    /* during a round the leaders are frozen at the moment it started, so nobody can switch to see the colors */
+    if (game && (game.phase === "play" || game.phase === "over") && game.spies && !game.test) {
+      return game.spies[p.team] === id ? "s" : "o";
+    }
+    if (!rotating()) return p.role || null;
+    var m = members(p.team); if (!m.length) return null;
+    var rr = (game.phase === "play" || game.phase === "over") ? (game.round || 1) : (game.round || 0) + 1;
+    return m[(rr - 1) % m.length] === id ? "s" : "o";
+  }
+  function spyOf(team) {
+    return Object.keys(players).filter(function (id) { return players[id].team === team && players[id].role === "s"; })[0] || null;
+  }
+
+  /* ---------- actions ---------- */
+  async function pick(team, role) {
+    if (game && game.phase === "play" && !game.test) { toast("الأدوار مقفلة أثناء الجولة. انتظر لما تخلص."); return; }
+    var me = players[uid] || {}, rot = rotating();
+    var same = me.team === team && (rot || me.role === role);
+    try { await pref().update(same ? { team: null, role: null } : { team: team, role: rot ? "o" : role }); } catch (e) { fail(e); }
+  }
+  function setSetting(patch) {
+    if (!game || game.hostId !== uid) return;
+    gref().update(patch).catch(fail);
+  }
+  async function kick(id) {
+    try { await db.collection("games/" + code + "/players").doc(id).delete(); toast("تم إخراج اللاعب"); } catch (e) { fail(e); }
+  }
+  async function startGame(rematch, test) {
+    if (busy || !game) return; busy = true;
+    try {
+      var g = game;
+      var words = pickWords(g.custom || [], g.cats || allCatIds(), g.level || "normal");
+      var first = rematch ? (g.first === "r" ? "b" : "r") : (Math.random() < 0.5 ? "r" : "b");
+      var other = first === "r" ? "b" : "r";
+      var key = [];
+      for (var i = 0; i < 9; i++) key.push(first);
+      for (i = 0; i < 8; i++) key.push(other);
+      for (i = 0; i < 7; i++) key.push("n");
+      key.push("a");
+      key = shuffle(key);
+      var upd = {
+        phase: "play", words: words, key: key, revealed: words.map(function () { return false; }),
+        turn: first, first: first, clue: null, left: 0, winner: null, why: null, last: null,
+        log: ["بدأت الجولة. يبدأ الفريق " + TEAM[first] + ". الله يستر!"],
+        round: (g.round || 0) + 1, test: !!(test || g.test),
+        phaseEnds: endsAtFor(g), expireAt: expireTs(48 * 3600 * 1000)
+      };
+      if (test) upd.rotate = false;
+      upd.stats = {}; upd.late = {};
+      var isTest = !!(test || g.test);
+      upd.spies = null;
+      if (!isTest) {
+        var sp = {};
+        ["r", "b"].forEach(function (t) {
+          if (g.rotate !== false) { var m = members(t); sp[t] = m.length ? m[((g.round || 0) + 1 - 1) % m.length] : null; }
+          else sp[t] = spyOf(t);
+        });
+        upd.spies = sp;
+      }
+      if (!g.score) upd.score = { r: 0, b: 0 };
+      await gref().update(upd);
+    } catch (e) { fail(e); } finally { busy = false; }
+  }
+  async function sendClue(ev) {
+    ev.preventDefault();
+    if (busy || !game) return;
+    var w = $("clueWord").value.trim(); var n = parseInt($("clueNum").value, 10);
+    if (!w) { toast("اكتب التلميح"); return; }
+    if (/\s/.test(w)) { toast("التلميح كلمة وحدة، مو قصيدة 😅"); return; }
+    var clash = game.words.some(function (x, i) { return !game.revealed[i] && x === w; });
+    if (clash) { toast("هذي كلمة من اللوحة. لا تغش!"); return; }
+    busy = true;
+    try {
+      var log = (game.log || []).concat(["الفريق " + TEAM[game.turn] + " (القائد): «" + w + "» " + n]).slice(-14);
+      await gref().update({ clue: { word: w, num: n }, left: n === 0 ? 99 : n + 1, log: log, phaseEnds: endsAtFor(game) });
+      $("clueWord").value = "";
+    } catch (e) { fail(e); } finally { busy = false; }
+  }
+  async function guess(i) {
+    if (busy || !game) return;
+    var g = game, me = players[uid] || {};
+    if (g.phase !== "play" || roleOf(uid) !== "o" || me.team !== g.turn || !g.clue || g.revealed[i]) return;
+    busy = true;
+    try {
+      var t = g.turn, other = t === "r" ? "b" : "r", k = g.key[i];
+      var rev = g.revealed.slice(); rev[i] = true;
+      var remaining = function (c) { return g.key.reduce(function (n, x, j) { return n + (x === c && !rev[j] ? 1 : 0); }, 0); };
+      var left = g.left - 1, turn = t, clue = g.clue, winner = null, why = null, phase = "play", swapped = false, kind;
+      var swap = function () { turn = other; clue = null; left = 0; swapped = true; };
+      if (k === "a") { kind = "assassin"; winner = other; why = "a"; phase = "over"; }
+      else if (k === t) {
+        kind = "own";
+        if (remaining(t) === 0) { winner = t; why = "all"; phase = "over"; } else if (left <= 0) swap();
+      } else if (k === other) {
+        kind = "opp";
+        if (remaining(other) === 0) { winner = other; why = "all"; phase = "over"; } else swap();
+      } else { kind = "neutral"; swap(); }
+      var msg = say(kind), by = me.name || "لاعب";
+      var st = JSON.parse(JSON.stringify(g.stats || {}));
+      var rec = st[uid] || { n: by, o: 0, e: 0, p: 0, a: 0 };
+      rec.n = by; rec[{ own: "o", neutral: "e", opp: "p", assassin: "a" }[kind]]++;
+      st[uid] = rec;
+      var log = (g.log || []).concat(["الفريق " + TEAM[t] + " — " + by + ": «" + g.words[i] + "» ← " + msg]).slice(-14);
+      var upd = {
+        revealed: rev, turn: turn, clue: clue, left: left, winner: winner, why: why, phase: phase, log: log,
+        last: { i: i, kind: kind, msg: msg, by: by, word: g.words[i], at: Date.now() },
+        stats: st
+      };
+      if (swapped && phase === "play") upd.phaseEnds = endsAtFor(g);
+      if (phase === "over") {
+        upd.phaseEnds = null;
+        var s = g.score || { r: 0, b: 0 };
+        upd.score = { r: (s.r || 0) + (winner === "r" ? 1 : 0), b: (s.b || 0) + (winner === "b" ? 1 : 0) };
+      }
+      await gref().update(upd);
+    } catch (e) { fail(e); } finally { busy = false; }
+  }
+  async function endTurn() {
+    if (busy || !game) return; busy = true;
+    try {
+      var other = game.turn === "r" ? "b" : "r";
+      var log = (game.log || []).concat(["الفريق " + TEAM[game.turn] + " أنهى دوره."]).slice(-14);
+      await gref().update({ turn: other, clue: null, left: 0, log: log, phaseEnds: endsAtFor(game) });
+    } catch (e) { fail(e); } finally { busy = false; }
+  }
+  async function timeoutTurn() {
+    var g = game;
+    if (busy || !g || g.phase !== "play") return;
+    busy = true;
+    try {
+      var other = g.turn === "r" ? "b" : "r";
+      var msg = g.clue ? "الوقت خلص! الفريق " + TEAM[g.turn] + " نام على التخمين 😴" : "الفريق " + TEAM[g.turn] + " ما أعطى تلميح… القائد نام 😴";
+      var log = (g.log || []).concat([msg]).slice(-14);
+      var late = JSON.parse(JSON.stringify(g.late || {})), sid = g.spies && g.spies[g.turn];
+      if (!g.clue && sid) late[sid] = (late[sid] || 0) + 1;
+      await gref().update({ turn: other, clue: null, left: 0, log: log, phaseEnds: endsAtFor(g), late: late });
+    } catch (e) { timeoutKey = null; } finally { busy = false; }
+  }
+  async function backToLobby() {
+    if (busy || !game || game.hostId !== uid) return; busy = true;
+    try { await gref().update({ phase: "lobby", clue: null, phaseEnds: null, spies: null }); } catch (e) { fail(e); } finally { busy = false; }
+  }
+
+  /* ---------- rendering ---------- */
+  function render() {
+    var inRoom = !!code;
+    $("entry").hidden = inRoom; $("room").hidden = !inRoom;
+    if (!inRoom) return;
+    $("codeShow").textContent = code;
+    renderPicker();
+    renderScore();
+    if (!game) {
+      $("roomMsg").hidden = false;
+      $("lobby").hidden = true; $("board").hidden = true;
+      return;
+    }
+    $("roomMsg").hidden = true; clearTimeout(loadTimer);
+    if (game.phase === "lobby") { $("board").hidden = true; renderLobby(); }
+    else { $("lobby").hidden = true; renderBoard(); }
+  }
+  function renderScore() {
+    var s = game && game.score, box = $("scoreLine");
+    if (!game || !s || (!s.r && !s.b && !(game.round > 1))) { box.hidden = true; return; }
+    box.hidden = false; box.textContent = "";
+    box.appendChild(document.createTextNode("النتيجة:"));
+    box.appendChild(el("span", "sr", "الأحمر " + (s.r || 0)));
+    box.appendChild(el("span", "sb", "الأزرق " + (s.b || 0)));
+  }
+  function renderPicker() {
+    var me = players[uid] || {}, rot = rotating();
+    $("picker").hidden = !!game && game.phase === "play" && !game.test;
+    ["r", "b"].forEach(function (t) {
+      var box = $("pk-" + t); box.textContent = "";
+      if (rot) {
+        var on = me.team === t;
+        var b = el("button", "pick " + t + (on ? " on" : ""), on ? "أنت هنا" : "انضم");
+        b.type = "button"; b.dataset.team = t; b.dataset.role = "o"; box.appendChild(b);
+      } else {
+        [["s", "قائد"], ["o", "عميل"]].forEach(function (x) {
+          var b = el("button", "pick " + t + ((me.team === t && me.role === x[0]) ? " on" : ""), x[1]);
+          b.type = "button"; b.dataset.team = t; b.dataset.role = x[0];
+          var s = spyOf(t);
+          b.disabled = x[0] === "s" && !!s && s !== uid && !(game && game.test);
+          box.appendChild(b);
+        });
+      }
+    });
+  }
+  function renderLobby() {
+    $("lobby").hidden = false;
+    var host = game.hostId === uid;
+    var lists = { r: $("listR"), b: $("listB") };
+    lists.r.textContent = ""; lists.b.textContent = ""; $("listN").textContent = "";
+    var ids = Object.keys(players).sort(function (a, b) { return (players[a].at || 0) - (players[b].at || 0); });
+    var bench = [];
+    ids.forEach(function (id) {
+      var p = players[id];
+      var nm = (p.name || "لاعب") + (id === uid ? " (أنت)" : "");
+      if (p.team && lists[p.team]) {
+        var li = el("li"); li.appendChild(el("span", "", nm));
+        li.appendChild(el("span", "tag", roleOf(id) === "s" ? "قائد" : "عميل"));
+        if (id === game.hostId) li.appendChild(el("span", "tag", "المضيف"));
+        if (host && id !== uid) {
+          var kb = el("button", "kick", "إخراج"); kb.type = "button";
+          kb.addEventListener("click", function () { kick(id); });
+          li.appendChild(kb);
+        }
+        lists[p.team].appendChild(li);
+      } else bench.push(nm);
+    });
+    $("listN").textContent = bench.length ? bench.join("، ") : "ما أحد… الكل نايم؟";
+
+    /* settings: everyone sees them, only the host changes them */
+    var chosen = game.cats || allCatIds();
+    var chips = $("catChips"), tchips = $("themeChips"); chips.textContent = ""; tchips.textContent = "";
+    CATS.forEach(function (c) {
+      var on = chosen.indexOf(c.id) >= 0;
+      var lab = el("label", "chip" + (on ? " on" : "") + (host ? "" : " dis"));
+      var cb = el("input"); cb.type = "checkbox"; cb.checked = on; cb.disabled = !host;
+      cb.addEventListener("change", function () {
+        var next = chosen.filter(function (x) { return x !== c.id; });
+        if (cb.checked) next.push(c.id);
+        if (!next.length) { toast("لازم يبقى نوع واحد على الأقل"); render(); return; }
+        setSetting({ cats: next });
+      });
+      lab.appendChild(cb); lab.appendChild(document.createTextNode(c.name));
+      (c.theme ? tchips : chips).appendChild(lab);
+    });
+    $("levelSel").value = game.level || "normal";
+    $("timerSel").value = String(game.timer || 0);
+    $("rotateChk").checked = game.rotate !== false;
+    ["levelSel", "timerSel", "rotateChk"].forEach(function (id) { $(id).disabled = !host; });
+
+    $("hostBox").hidden = !host; $("waitHost").hidden = host;
+    if (host && !customInit) {
+      customInit = true;
+      if (game.custom && game.custom.length) $("customIn").value = game.custom.join("\n");
+      else if (lsGet("ks-custom")) { $("customIn").value = lsGet("ks-custom"); setSetting({ custom: parseCustom() }); }
+    }
+    var ready = rotating() ? (members("r").length >= 2 && members("b").length >= 2) : (!!spyOf("r") && !!spyOf("b"));
+    $("startBtn").disabled = !ready;
+    $("startHint").textContent = ready ? "" : (rotating()
+      ? "كل فريق يحتاج لاعبين اثنين على الأقل (قائد وعميل). والقائد يتبدل كل جولة."
+      : "لازم يكون لكل فريق قائد قبل البدء.");
+  }
+  function parseCustom() {
+    return uniq($("customIn").value.split(/[\n,،]+/).map(function (x) { return x.trim(); }).filter(Boolean)).slice(0, 60);
+  }
+  function checkReact(g) {
+    var cur = g.last ? g.last.at : 0;
+    if (seenAt === null) { seenAt = cur; return; }
+    if (cur !== seenAt) { if (cur > seenAt && g.last) showReact(g.last); seenAt = cur; }
+  }
+  function showReact(l) {
+    var box = $("react"); box.textContent = "";
+    var b = el("div", "bubble " + l.kind, (EMO[l.kind] || "") + " " + l.msg);
+    b.appendChild(el("small", "", l.by + ": «" + l.word + "»"));
+    box.appendChild(b); box.hidden = false;
+    clearTimeout(reactTimer); reactTimer = setTimeout(function () { box.hidden = true; }, 2700);
+    if (l.kind === "own") beep([[660, 0.12], [880, 0.18]]);
+    else if (l.kind === "neutral") beep([[330, 0.25]]);
+    else if (l.kind === "opp") beep([[300, 0.12], [220, 0.2]]);
+    else { beep([[260, 0.14], [200, 0.14], [140, 0.4]]); buzz([300, 100, 300]); }
+  }
+  function renderAwards(g, over) {
+    var box = $("awards"); box.textContent = "";
+    if (!over) { box.hidden = true; return; }
+    var st = g.stats || {}, list = [];
+    function top(key, title, fmt, min) {
+      var best = 0, ids = [];
+      Object.keys(st).forEach(function (id) {
+        var v = st[id][key] || 0;
+        if (v > best) { best = v; ids = [id]; } else if (v === best && v > 0) ids.push(id);
+      });
+      if (best >= min) list.push(title + " " + ids.map(function (id) { return st[id].n; }).join("، ") + " (" + fmt(best) + ")");
+    }
+    top("e", "🥚 ملك البيض:", function (v) { return v + " بيضة"; }, 1);
+    top("p", "🎁 هدية الخصم:", function (v) { return v + " كلمة للخصم"; }, 1);
+    top("o", "🧠 الخبير:", function (v) { return v + " صحيحة"; }, 2);
+    top("a", "☠️ سوّد وجهه:", function () { return "كشف القاتل"; }, 1);
+    var late = g.late || {}, lid = Object.keys(late).sort(function (a, b) { return late[b] - late[a]; })[0];
+    if (lid && late[lid] > 0) list.push("😴 القائد النايم: " + ((players[lid] && players[lid].name) || "قائد") + " (" + late[lid] + " مرة)");
+    if (!list.length) { box.hidden = true; return; }
+    list.forEach(function (x) { box.appendChild(el("li", "", x)); });
+    box.hidden = false;
+  }
+  function renderBoard() {
+    var g = game, over = g.phase === "over";
+    $("board").hidden = false;
+    var me = players[uid] || {}, team = me.team, role = roleOf(uid);
+    var isSpy = role === "s" && !!team, isOp = role === "o" && !!team;
+    var myTurn = !!team && team === g.turn;
+    var canGuess = isOp && !over && myTurn && !!g.clue;
+    var count = function (c) { return g.key.reduce(function (n, x, j) { return n + (x === c && !g.revealed[j] ? 1 : 0); }, 0); };
+
+    checkReact(g);
+    var key = g.round + ":" + g.turn + ":" + (g.clue ? 1 : 0) + ":" + g.phase;
+    var actionable = !over && ((isSpy && myTurn && !g.clue) || (isOp && myTurn && !!g.clue));
+    if (key !== lastKey) { if (lastKey !== null && actionable) attention(); lastKey = key; }
+
+    var bar = $("turnBar");
+    bar.className = "turnbar " + (over ? "" : "t-" + g.turn);
+    $("turnTxt").textContent = over ? "انتهت الجولة" : "دور الفريق " + TEAM[g.turn];
+    $("cntR").textContent = "الأحمر " + count("r"); $("cntB").textContent = "الأزرق " + count("b");
+    $("meLine").textContent = team ? "أنت: " + (isSpy ? "قائد" : "عميل") + " الفريق " + TEAM[team] : "أنت تشاهد من بعيد 😎";
+
+    var cb = $("clueBox");
+    if (g.clue && !over) {
+      cb.hidden = false; cb.textContent = "";
+      cb.appendChild(document.createTextNode("التلميح: "));
+      cb.appendChild(el("b", "", g.clue.word));
+      cb.appendChild(document.createTextNode(" · " + g.clue.num + (g.clue.num === 0 ? " (بلا حد)" : "")));
+      cb.appendChild(el("div", "small muted", g.left > 90 ? "تخمينات غير محدودة" : "المتبقي من التخمينات: " + g.left));
+    } else cb.hidden = true;
+
+    var wb = $("winBanner");
+    if (over) {
+      wb.hidden = false; wb.className = "banner t-" + g.winner; wb.textContent = "فاز الفريق " + TEAM[g.winner] + " 🏆";
+      var pool = g.why === "a" ? WIN_A : WIN_ALL;
+      wb.appendChild(el("small", "", pool[(g.round || 0) % pool.length] + " — تحياتي، دراكون 🐉"));
+    } else wb.hidden = true;
+    renderAwards(g, over);
+
+    if (prevRev === null || prevRound !== g.round) { prevRev = g.revealed.slice(); prevRound = g.round; }
+    var grid = $("grid"); grid.textContent = "";
+    g.words.forEach(function (w, i) {
+      var b = el("button", "card", w); b.type = "button";
+      var k = g.key[i];
+      if (g.revealed[i]) {
+        b.classList.add("c-" + k);
+        if (!prevRev[i]) b.classList.add("flipnew");
+      } else {
+        if (isSpy || over) b.classList.add("hint-" + k);
+        if (over) b.classList.add("dim");
+        if (canGuess) { b.classList.add("live"); b.addEventListener("click", function () { guess(i); }); }
+      }
+      grid.appendChild(b);
+    });
+    prevRev = g.revealed.slice();
+
+    $("clueForm").hidden = !(isSpy && myTurn && !g.clue && !over);
+    $("endTurnBtn").hidden = !(isOp && myTurn && !!g.clue && !over);
+    $("againBtn").hidden = !over;
+    $("backLobbyBtn").hidden = !(g.hostId === uid);
+
+    var hint = "";
+    if (over) hint = "";
+    else if (!team || !role) hint = "اختر فريقاً من الأعلى لتشارك، أو انتظر الجولة القادمة.";
+    else if (isSpy && myTurn && !g.clue) hint = "أعطِ فريقك تلميحاً من كلمة واحدة وعدداً، وفكّر قبل لا تفضحهم.";
+    else if (isSpy && myTurn) hint = "فريقك يخمّن الآن. لا تسوي وجه!";
+    else if (isSpy) hint = "بانتظار الفريق الآخر.";
+    else if (myTurn && g.clue) hint = "اضغط على الكلمة التي تظن أنها لفريقك.";
+    else if (myTurn) hint = "بانتظار تلميح القائد.";
+    else hint = "دور الفريق الآخر.";
+    $("hint").textContent = (g.test && !over ? "وضع التجربة: بدّل دورك من الأعلى لتجرب القائد والعميل. " : "") + hint;
+
+    var log = $("log"); log.textContent = "";
+    (g.log || []).slice().reverse().slice(0, 6).forEach(function (x) { log.appendChild(el("li", "", x)); });
+  }
+  function tick() {
+    var t = $("timerTxt");
+    if (!game || game.phase !== "play" || !game.phaseEnds) { t.textContent = ""; return; }
+    var rem = Math.ceil((game.phaseEnds - Date.now()) / 1000);
+    t.textContent = rem > 0 ? "الوقت: " + rem : "انتهى الوقت…";
+    t.classList.toggle("low", rem <= 10);
+    var grace = game.hostId === uid ? 0 : 3;
+    if (rem <= -grace && timeoutKey !== game.phaseEnds) { timeoutKey = game.phaseEnds; timeoutTurn(); }
+  }
+
+  /* ---------- wiring ---------- */
+  $("createBtn").addEventListener("click", createRoom);
+  $("joinBtn").addEventListener("click", joinRoom);
+  $("codeIn").addEventListener("keydown", function (e) { if (e.key === "Enter") joinRoom(); });
+  $("leaveBtn").addEventListener("click", function () { leaveRoom(false); });
+  $("startBtn").addEventListener("click", function () { startGame(false, false); });
+  $("againBtn").addEventListener("click", function () { startGame(true, false); });
+  $("testBtn").addEventListener("click", function () { startGame(false, true); });
+  $("backLobbyBtn").addEventListener("click", backToLobby);
+  $("endTurnBtn").addEventListener("click", endTurn);
+  $("clueForm").addEventListener("submit", sendClue);
+  $("picker").addEventListener("click", function (e) {
+    var b = e.target.closest(".pick"); if (!b || b.disabled) return; pick(b.dataset.team, b.dataset.role);
+  });
+  $("levelSel").addEventListener("change", function () { setSetting({ level: $("levelSel").value }); });
+  $("timerSel").addEventListener("change", function () { setSetting({ timer: parseInt($("timerSel").value, 10) || 0 }); });
+  $("rotateChk").addEventListener("change", function () { setSetting({ rotate: $("rotateChk").checked }); });
+  $("customIn").addEventListener("change", function () {
+    lsSet("ks-custom", $("customIn").value);
+    setSetting({ custom: parseCustom() });
+  });
+  $("soundBtn").addEventListener("click", function () {
+    soundOn = !soundOn; lsSet("ks-sound", soundOn ? "on" : "off"); setSoundBtn();
+    if (soundOn) { ac(); beep([[700, 0.1]]); }
+  });
+  document.addEventListener("click", function () { ac(); });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) document.title = baseTitle; });
+  setInterval(tick, 500);
+function copyText(t, msg) {
+    try { navigator.clipboard.writeText(t).then(function () { toast(msg); }, function () { toast(t); }); } catch (e) { toast(t); }
+  }
+  function inviteUrl() { return location.origin + location.pathname + "#room-" + code; }
+  $("copyBtn").addEventListener("click", function () { copyText(code, "تم نسخ الرمز " + code); });
+  $("shareBtn").addEventListener("click", function () {
+    var text = "تعال نلعب كلمات دراكون السرية! رمز الغرفة: " + code;
+    if (navigator.share) { navigator.share({ title: "كلمات دراكون السرية", text: text, url: inviteUrl() }).catch(function () {}); }
+    else copyText(text + "\n" + inviteUrl(), "تم نسخ رابط الدعوة");
+  });
+  if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }
+  init();
+})();
+</script>
+</body>
+</html>
