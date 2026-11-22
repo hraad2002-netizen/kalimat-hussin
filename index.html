@@ -206,7 +206,15 @@ ul.pl li { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; over
 .banner.t-r { background: var(--red); color: var(--red-ink); }
 .banner.t-b { background: var(--blue); color: var(--blue-ink); }
 .banner small { display: block; font-family: var(--body); font-size: 14px; font-weight: 400; }
-ul.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+ul.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 17px; line-height: 1.5; color: var(--fg); }
+ul.log li { padding: 6px 10px; border-radius: 10px; background: var(--surface-2); overflow-wrap: anywhere; }
+ul.log li:first-child { background: var(--surface); border: 2px solid var(--fg); font-weight: 800; }
+.logwrap { border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; background: var(--surface); }
+.loghead { font-family: var(--display); font-size: 15px; color: var(--muted); margin-bottom: 6px; }
+.roomfoot { padding: 8px 12px; margin-top: 14px; opacity: .92; }
+.roomfoot .roomhead { gap: 8px; }
+.roomfoot .code { font-size: 16px; letter-spacing: .12em; padding: 0 8px; }
+.roomfoot .btn { padding: 5px 10px; min-height: 0; font-size: 13px; }
 button.kick { font: inherit; font-size: 12px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 99px; padding: 0 8px; }
 
 .react { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 30; padding: 16px; }
@@ -278,21 +286,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
 
   <!-- Room -->
   <section id="room" hidden>
-    <div class="panel">
-      <div class="roomhead">
-        <div>
-          <div class="small muted">رمز الغرفة</div>
-          <div class="code" id="codeShow">----</div>
-        </div>
-        <div class="row">
-          <button id="soundBtn" class="btn ghost" type="button">التنبيهات: تشغيل</button>
-          <button id="shareBtn" class="btn primary" type="button">مشاركة الدعوة</button>
-          <button id="copyBtn" class="btn" type="button">نسخ الرمز</button>
-          <button id="leaveBtn" class="btn ghost" type="button">خروج</button>
-        </div>
-      </div>
-      <p class="small muted">اضغط «مشاركة الدعوة» وأرسل الرابط لأصدقائك على واتساب أو تلغرام، وهم يدخلون الغرفة مباشرة.</p>
-
+    <div class="panel" id="pickPanel">
       <div id="picker" class="picker" aria-label="اختيار الفريق والدور">
         <div class="pickrow"><span class="tm"><span class="dot r"></span>الفريق الأحمر</span><span class="btns" id="pk-r"></span></div>
         <div class="pickrow"><span class="tm"><span class="dot b"></span>الفريق الأزرق</span><span class="btns" id="pk-b"></span></div>
@@ -345,6 +339,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
 
     <!-- Board -->
     <div id="board" hidden style="margin-top:16px; display:flex; flex-direction:column; gap:12px">
+      <div id="logWrap" class="logwrap" hidden><div class="loghead">آخر الحركات والتلميحات</div><ul id="log" class="log"></ul></div>
       <div id="turnBar" class="turnbar"><span id="turnTxt"></span><span id="timerTxt" class="timer"></span><span class="counts"><span class="cr" id="cntR"></span><span class="cb" id="cntB"></span></span></div>
       <p id="meLine" class="status"></p>
       <div id="rosters" class="rosters"></div>
@@ -364,7 +359,17 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
       <button id="againBtn" class="btn primary" type="button" hidden>جولة جديدة</button>
       <button id="backLobbyBtn" class="btn ghost" type="button" hidden>العودة للردهة (تغيير الإعدادات)</button>
       <p id="hint" class="status"></p>
-      <ul id="log" class="log"></ul>
+    </div>
+    <div class="panel roomfoot">
+      <div class="roomhead">
+        <div class="small muted">رمز الغرفة <span class="code" id="codeShow">----</span></div>
+        <div class="row">
+          <button id="soundBtn" class="btn ghost" type="button">التنبيهات: تشغيل</button>
+          <button id="shareBtn" class="btn primary" type="button">مشاركة الدعوة</button>
+          <button id="copyBtn" class="btn" type="button">نسخ الرمز</button>
+          <button id="leaveBtn" class="btn ghost" type="button">خروج</button>
+        </div>
+      </div>
     </div>
   </section>
   <p class="credit">صُنعت بواسطة دراكون 🐉</p>
@@ -409,7 +414,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     { id: "social", name: "📱 سوشيال ميديا", theme: true, w: "واتساب تلغرام فيسبوك إنستغرام تيكتوك يوتيوب ستوري بث متابع لايك تعليق هاشتاغ إشعار رسالة مجموعة سيلفي ترند فيديو" },
     { id: "jobs", name: "👷 مهن", theme: true, w: "طباخ نجار حداد خياط سائق معلم مهندس محاسب صيدلي حلاق خباز فلاح صياد راعي بائع رسام مصور مذيع كاتب" },
     { id: "hunter", name: "🏹 تيم الصياد", theme: true, all: true, l: ["عجينة", "الصياد", "دراكون", "ابوشبوكي", "خشوب", "باندا", "انفور", "حسن هاشم", "حمودي اياد"] },
-    { id: "lab", name: "🥼 مختبرنا", theme: true, all: true, l: ["حسين رعد🦁", "حسن عامر 🐅", "بنين 🐼", "زهراء 🐨", "نبأ 🦄", "صورة دم", "بكتيريا", "ادرار", "طباعة", "يوريا", "كبد", "كلى", "سحب دم", "ابرة 💉", "كب ادرار", "زرع 🧫", "غدة", "ثايرود", "بيليروبين", "فاهية", "مجاملة", "انفعالي", "ابو خابصهة", "شايفة نفسهة", "كونترول", "كالبريشين"] }
+    { id: "lab", name: "🥼 مختبرنا", theme: true, all: true, l: ["حسين رعد🦁", "حسين عمار 🐅", "بنين 🐼", "زهراء 🐨", "نبأ 🦄", "صورة دم", "بكتيريا", "ادرار", "طباعة", "يوريا", "كبد", "كلى", "سحب دم", "ابرة 💉", "كب ادرار", "زرع 🧫", "غدة", "ثايرود", "بيليروبين", "فاهية", "مجاملة", "مزاجي", "ابو خابصهة", "شايفة نفسهة", "كونترول", "كالبريشين"] }
   ].map(function (c) { return { id: c.id, name: c.name, theme: !!c.theme, all: !!c.all, words: c.l || c.w.split(/\s+/) }; });
   var LEVELS = { easy: { t: 8, p: 3 }, normal: { t: 5, p: 4 }, hard: { t: 3, p: 7 } };
 
@@ -621,7 +626,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     unsubs.forEach(function (u) { try { u(); } catch (e) {} }); unsubs = [];
     clearTimeout(loadTimer);
     try { if (!skipDelete && db && c) await db.collection("games/" + c + "/players").doc(uid).delete(); } catch (e) {}
-    code = null; game = null; players = {};
+    code = null; game = null; players = {}; prevPhaseSeen = null;
     try { location.hash = ""; } catch (e) {}
     render();
   }
@@ -775,7 +780,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     } catch (e) { timeoutKey = null; } finally { busy = false; }
   }
   /* ---------- bot team (driven by the host's device) ---------- */
-  var botTimer = null, botKey = null;
+  var botTimer = null, botKey = null, prevPhaseSeen = null;
   function botSchedule() {
     var g = game;
     if (!g || !g.bot || g.test || g.phase !== "play" || g.turn !== g.bot || g.hostId !== uid) return;
@@ -805,7 +810,9 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     botKey = null;
   }
   async function backToLobby() {
-    if (busy || !game || game.hostId !== uid) return; busy = true;
+    if (busy || !game || game.hostId !== uid) return;
+    if (!window.confirm("هل أنت متأكد من المغادرة؟ إذا رجعت للردهة تنتهي اللعبة عند الجميع.")) return;
+    busy = true;
     try { await gref().update({ phase: "lobby", clue: null, phaseEnds: null, spies: null }); } catch (e) { fail(e); } finally { busy = false; }
   }
 
@@ -823,6 +830,8 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
       return;
     }
     $("roomMsg").hidden = true; clearTimeout(loadTimer);
+    if (prevPhaseSeen === "play" && game.phase === "lobby") toast("انتهت اللعبة ورجعتم للردهة.");
+    prevPhaseSeen = game.phase;
     if (game.phase === "lobby") { $("board").hidden = true; renderLobby(); }
     else { $("lobby").hidden = true; renderBoard(); }
   }
@@ -836,7 +845,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
   }
   function renderPicker() {
     var me = players[uid] || {}, rot = rotating();
-    $("picker").hidden = !!game && game.phase === "play" && !game.test;
+    $("picker").hidden = $("pickPanel").hidden = !!game && game.phase === "play" && !game.test;
     ["r", "b"].forEach(function (t) {
       var box = $("pk-" + t); box.textContent = "";
       if (game && game.bot === t && !game.test) { box.appendChild(el("span", "muted", "🤖 يلعبه البوت")); return; }
@@ -1041,7 +1050,9 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     $("hint").textContent = (g.test && !over ? "وضع التجربة: بدّل دورك من الأعلى لتجرب القائد والعميل. " : "") + hint;
 
     var log = $("log"); log.textContent = "";
-    (g.log || []).slice().reverse().slice(0, 6).forEach(function (x) { log.appendChild(el("li", "", x)); });
+    var items = (g.log || []).slice().reverse().slice(0, 5);
+    items.forEach(function (x) { log.appendChild(el("li", "", x)); });
+    $("logWrap").hidden = !items.length;
   }
   function tick() {
     var t = $("timerTxt");
@@ -1057,7 +1068,13 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
   $("createBtn").addEventListener("click", createRoom);
   $("joinBtn").addEventListener("click", joinRoom);
   $("codeIn").addEventListener("keydown", function (e) { if (e.key === "Enter") joinRoom(); });
-  $("leaveBtn").addEventListener("click", function () { leaveRoom(false); });
+  $("leaveBtn").addEventListener("click", async function () {
+    var me = players[uid] || {}, playing = !!game && game.phase === "play" && !game.test && !!me.team && me.team !== game.bot;
+    var msg = playing ? "هل أنت متأكد من المغادرة؟ إذا غادرت تنتهي اللعبة عند الجميع." : "هل أنت متأكد من الخروج من الغرفة؟";
+    if (!window.confirm(msg)) return;
+    if (playing) { try { await gref().update({ phase: "lobby", clue: null, phaseEnds: null, spies: null }); } catch (e) {} }
+    leaveRoom(false);
+  });
   $("startBtn").addEventListener("click", function () { startGame(false, false); });
   $("againBtn").addEventListener("click", function () { startGame(true, false); });
   $("testBtn").addEventListener("click", function () { startGame(false, true); });
