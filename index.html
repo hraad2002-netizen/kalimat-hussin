@@ -83,8 +83,9 @@ p { margin: 0; }
 
 .badge { display: inline-block; font-family: var(--body); font-size: 13px; font-weight: 700; padding: 0 10px; border-radius: 99px; background: var(--dark); color: var(--dark-ink); vertical-align: middle; margin-inline-start: 8px; letter-spacing: .02em; }
 .credit { text-align: center; font-size: 13px; color: var(--muted); padding-top: 4px; }
+.hero { display: block; width: 100%; max-width: 360px; height: auto; margin: 0 auto 14px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.35); }
 .brand { display: flex; align-items: center; gap: 14px; }
-.logo { display: grid; grid-template-columns: repeat(3, 12px); gap: 3px; flex: none; }
+.logo { width: 52px; height: 52px; border-radius: 12px; flex: none; object-fit: cover; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
 .logo i { width: 12px; height: 12px; border-radius: 3px; background: var(--sand); }
 .logo i.r { background: var(--red); } .logo i.b { background: var(--blue); } .logo i.k { background: var(--dark); }
 
@@ -228,7 +229,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
 <body>
 <div id="app" lang="ar" dir="rtl">
   <header class="brand">
-    <div class="logo" aria-hidden="true"><i class="r"></i><i></i><i class="b"></i><i></i><i class="k"></i><i></i><i class="b"></i><i></i><i class="r"></i></div>
+    <img class="logo" src="logo-small.png" alt="" width="52" height="52">
     <div>
       <h1>كلمات سرية<span class="badge">نسخة دراكون</span></h1>
       <p class="muted small">لعبة فريقين أونلاين: القادة يعطون التلميحات والعملاء يخمنون… وغلطة وحدة تفضحكم</p>
@@ -237,6 +238,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
 
   <!-- Entry -->
   <section id="entry" class="panel">
+    <img class="hero" src="hero.jpg" alt="كلمات دراكون السرية" width="640" height="685">
     <div class="field">
       <label for="nameIn">اسمك</label>
       <input id="nameIn" type="text" maxlength="20" placeholder="مثال: حسين" autocomplete="nickname">
