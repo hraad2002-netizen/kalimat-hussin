@@ -321,6 +321,8 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
       <div class="row">
         <div class="field grow"><label for="levelSel">الصعوبة</label>
           <select id="levelSel"><option value="easy">سهل (كل ٣ كلمات تربطها كلمة وحدة)</option><option value="normal">عادي (كلمات تتزاوج)</option><option value="hard">صعب (كلمات متقاربة)</option></select></div>
+        <div class="field grow"><label for="botSel">فريق بوت (للعب لاعبين اثنين بس)</label>
+          <select id="botSel"><option value="">بدون بوت</option><option value="r">الأحمر يلعبه بوت 🤖</option><option value="b">الأزرق يلعبه بوت 🤖</option></select></div>
         <div class="field grow"><label for="timerSel">مؤقت الدور</label>
           <select id="timerSel"><option value="0">بدون</option><option value="60">60 ثانية</option><option value="90">90 ثانية</option><option value="120">120 ثانية</option></select></div>
       </div>
@@ -626,12 +628,14 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
 
   /* ---------- roles ---------- */
   function members(team) {
+    if (game && game.bot === team) return [];
     return Object.keys(players).filter(function (id) { return players[id].team === team; })
       .sort(function (a, b) { return ((players[a].at || 0) - (players[b].at || 0)) || (a < b ? -1 : 1); });
   }
   function rotating() { return !!game && !game.test && game.rotate !== false; }
   function roleOf(id) {
     var p = players[id]; if (!p || !p.team) return null;
+    if (game && game.bot && p.team === game.bot) return null;
     /* during a round the leaders are frozen at the moment it started, so nobody can switch to see the colors */
     if (game && (game.phase === "play" || game.phase === "over") && game.spies && !game.test) {
       return game.spies[p.team] === id ? "s" : "o";
@@ -648,6 +652,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
   /* ---------- actions ---------- */
   async function pick(team, role) {
     if (game && game.phase === "play" && !game.test) { toast("الأدوار مقفلة أثناء الجولة. انتظر لما تخلص."); return; }
+    if (game && game.bot === team) { toast("هذا الفريق يلعبه البوت 🤖"); return; }
     var me = players[uid] || {}, rot = rotating();
     var same = me.team === team && (rot || me.role === role);
     try { await pref().update(same ? { team: null, role: null } : { team: team, role: rot ? "o" : role }); } catch (e) { fail(e); }
@@ -673,14 +678,15 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
         round: (g.round || 0) + 1, test: !!(test || (rematch && g.test)),
         phaseEnds: endsAtFor(g), expireAt: expireTs(48 * 3600 * 1000)
       };
-      if (test) upd.rotate = false;
+      if (test) { upd.rotate = false; upd.bot = null; }
       upd.stats = {}; upd.late = {};
       var isTest = !!(test || (rematch && g.test));
       upd.spies = null;
       if (!isTest) {
         var sp = {};
         ["r", "b"].forEach(function (t) {
-          if (g.rotate !== false) { var m = members(t); sp[t] = m.length ? m[((g.round || 0) + 1 - 1) % m.length] : null; }
+          if (g.bot === t) sp[t] = null;
+          else if (g.rotate !== false) { var m = members(t); sp[t] = m.length ? m[((g.round || 0) + 1 - 1) % m.length] : null; }
           else sp[t] = spyOf(t);
         });
         upd.spies = sp;
@@ -708,6 +714,10 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     if (busy || !game) return;
     var g = game, me = players[uid] || {};
     if (g.phase !== "play" || roleOf(uid) !== "o" || me.team !== g.turn || !g.clue || g.revealed[i]) return;
+    return doGuess(i, uid, me.name || "لاعب");
+  }
+  async function doGuess(i, actor, by) {
+    var g = game;
     busy = true;
     try {
       var t = g.turn, other = t === "r" ? "b" : "r", k = g.key[i];
@@ -723,11 +733,11 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
         kind = "opp";
         if (remaining(other) === 0) { winner = other; why = "all"; phase = "over"; } else swap();
       } else { kind = "neutral"; swap(); }
-      var msg = say(kind), by = me.name || "لاعب";
+      var msg = say(kind);
       var st = JSON.parse(JSON.stringify(g.stats || {}));
-      var rec = st[uid] || { n: by, o: 0, e: 0, p: 0, a: 0 };
+      var rec = st[actor] || { n: by, o: 0, e: 0, p: 0, a: 0 };
       rec.n = by; rec[{ own: "o", neutral: "e", opp: "p", assassin: "a" }[kind]]++;
-      st[uid] = rec;
+      st[actor] = rec;
       var log = (g.log || []).concat(["الفريق " + TEAM[t] + " — " + by + ": «" + g.words[i] + "» ← " + msg]).slice(-14);
       var upd = {
         revealed: rev, turn: turn, clue: clue, left: left, winner: winner, why: why, phase: phase, log: log,
@@ -764,6 +774,36 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
       await gref().update({ turn: other, clue: null, left: 0, log: log, phaseEnds: endsAtFor(g), late: late });
     } catch (e) { timeoutKey = null; } finally { busy = false; }
   }
+  /* ---------- bot team (driven by the host's device) ---------- */
+  var botTimer = null, botKey = null;
+  function botSchedule() {
+    var g = game;
+    if (!g || !g.bot || g.test || g.phase !== "play" || g.turn !== g.bot || g.hostId !== uid) return;
+    var k = g.round + ":" + g.turn + ":" + (g.clue ? g.clue.word : "") + ":" + g.revealed.filter(Boolean).length;
+    if (k === botKey) return; botKey = k;
+    clearTimeout(botTimer); botTimer = setTimeout(botStep, g.clue ? 1700 : 2200);
+  }
+  async function botStep() {
+    var g = game;
+    if (!g || !g.bot || g.test || g.phase !== "play" || g.turn !== g.bot || g.hostId !== uid) return;
+    if (busy) { botKey = null; setTimeout(botSchedule, 600); return; }
+    var t = g.bot, own = [], rest = [];
+    g.words.forEach(function (w, i) { if (!g.revealed[i]) (g.key[i] === t ? own : rest).push(i); });
+    if (!g.clue) {
+      var n = Math.max(1, Math.min(own.length, 1 + Math.floor(Math.random() * 3)));
+      busy = true;
+      try {
+        var log = (g.log || []).concat(["الفريق " + TEAM[t] + " (البوت 🤖): «ما أقول لكم» " + n]).slice(-14);
+        await gref().update({ clue: { word: "🤖 البوت", num: n }, left: n + 1, log: log, phaseEnds: endsAtFor(g) });
+      } catch (e) { botKey = null; fail(e); } finally { busy = false; }
+      return;
+    }
+    var acc = ({ easy: 0.4, normal: 0.6, hard: 0.78 })[g.level || "normal"] || 0.6;
+    var pool = (Math.random() < acc && own.length) || !rest.length ? own : rest;
+    if (!pool.length) return;
+    await doGuess(pool[Math.floor(Math.random() * pool.length)], "bot", "🤖 البوت");
+    botKey = null;
+  }
   async function backToLobby() {
     if (busy || !game || game.hostId !== uid) return; busy = true;
     try { await gref().update({ phase: "lobby", clue: null, phaseEnds: null, spies: null }); } catch (e) { fail(e); } finally { busy = false; }
@@ -799,6 +839,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     $("picker").hidden = !!game && game.phase === "play" && !game.test;
     ["r", "b"].forEach(function (t) {
       var box = $("pk-" + t); box.textContent = "";
+      if (game && game.bot === t && !game.test) { box.appendChild(el("span", "muted", "🤖 يلعبه البوت")); return; }
       if (rot) {
         var on = me.team === t;
         var b = el("button", "pick " + t + (on ? " on" : ""), on ? "أنت هنا" : "انضم");
@@ -824,7 +865,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     ids.forEach(function (id) {
       var p = players[id];
       var nm = (p.name || "لاعب") + (id === uid ? " (أنت)" : "");
-      if (p.team && lists[p.team]) {
+      if (p.team && lists[p.team] && p.team !== game.bot) {
         var li = el("li"); li.appendChild(el("span", "", nm));
         li.appendChild(el("span", "tag", roleOf(id) === "s" ? "قائد" : "عميل"));
         if (id === game.hostId) li.appendChild(el("span", "tag", "المضيف"));
@@ -836,6 +877,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
         lists[p.team].appendChild(li);
       } else bench.push(nm);
     });
+    if (game.bot) lists[game.bot].appendChild(el("li", "", "🤖 البوت"));
     $("listN").textContent = bench.length ? bench.join("، ") : "ما أحد… الكل نايم؟";
 
     /* settings: everyone sees them, only the host changes them */
@@ -855,9 +897,10 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
       (c.theme ? tchips : chips).appendChild(lab);
     });
     $("levelSel").value = game.level || "normal";
+    $("botSel").value = game.bot || "";
     $("timerSel").value = String(game.timer || 0);
     $("rotateChk").checked = game.rotate !== false;
-    ["levelSel", "timerSel", "rotateChk"].forEach(function (id) { $(id).disabled = !host; });
+    ["levelSel", "timerSel", "rotateChk", "botSel"].forEach(function (id) { $(id).disabled = !host; });
 
     $("hostBox").hidden = !host; $("waitHost").hidden = host;
     if (host && !customInit) {
@@ -865,11 +908,12 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
       if (game.custom && game.custom.length) $("customIn").value = game.custom.join("\n");
       else if (lsGet("ks-custom")) { $("customIn").value = lsGet("ks-custom"); setSetting({ custom: parseCustom() }); }
     }
-    var ready = rotating() ? (members("r").length >= 2 && members("b").length >= 2) : (!!spyOf("r") && !!spyOf("b"));
+    var teamsOk = function (t) { return rotating() ? members(t).length >= 2 : (!!spyOf(t) && members(t).length >= 2); };
+    var ready = game.bot ? teamsOk(game.bot === "r" ? "b" : "r") : (rotating() ? (members("r").length >= 2 && members("b").length >= 2) : (!!spyOf("r") && !!spyOf("b")));
     $("startBtn").disabled = !ready;
     $("startHint").textContent = ready ? "" : (rotating()
       ? "كل فريق يحتاج لاعبين اثنين على الأقل (قائد وعميل). والقائد يتبدل كل جولة."
-      : "كل فريق يختار قائد واحد (زر «قائد») والباقي يضغطون «عميل». بعد البدء الأدوار تنقفل.");
+      : "كل فريق يختار قائد واحد (زر «قائد») والباقي يضغطون «عميل». بعد البدء الأدوار تنقفل.") + (game.bot ? " فريق " + TEAM[game.bot] + " يلعبه البوت، فتحتاجون لاعبين اثنين بالفريق الثاني (قائد وعميل)." : "");
   }
   function parseCustom() {
     return uniq($("customIn").value.split(/[\n,،]+/).map(function (x) { return x.trim(); }).filter(Boolean)).slice(0, 60);
@@ -915,7 +959,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
   function renderBoard() {
     var g = game, over = g.phase === "over";
     $("board").hidden = false;
-    var me = players[uid] || {}, team = me.team, role = roleOf(uid);
+    var me = players[uid] || {}, team = (g.bot && me.team === g.bot) ? null : me.team, role = roleOf(uid);
     var isSpy = role === "s" && !!team, isOp = role === "o" && !!team;
     var myTurn = !!team && team === g.turn;
     var canGuess = isOp && !over && myTurn && !!g.clue;
@@ -945,7 +989,8 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     ["b", "r"].forEach(function (t) {
       var d = el("div", "roster t-" + t); d.appendChild(el("h4", "", "الفريق " + TEAM[t]));
       var ul = el("ul"), ids = members(t);
-      if (!ids.length) ul.appendChild(el("li", "muted", "—"));
+      if (g.bot === t) ul.appendChild(el("li", "", "🤖 البوت"));
+      else if (!ids.length) ul.appendChild(el("li", "muted", "—"));
       ids.forEach(function (id) {
         var nm = (players[id].name || "لاعب") + (roleOf(id) === "s" ? " 🕵️ قائد" : "");
         ul.appendChild(el("li", id === uid ? "me" : "", nm));
@@ -992,6 +1037,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     else if (myTurn && g.clue) hint = "اضغط على الكلمة التي تظن أنها لفريقك.";
     else if (myTurn) hint = "بانتظار تلميح القائد.";
     else hint = "دور الفريق الآخر.";
+    botSchedule();
     $("hint").textContent = (g.test && !over ? "وضع التجربة: بدّل دورك من الأعلى لتجرب القائد والعميل. " : "") + hint;
 
     var log = $("log"); log.textContent = "";
@@ -1021,6 +1067,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
   $("picker").addEventListener("click", function (e) {
     var b = e.target.closest(".pick"); if (!b || b.disabled) return; pick(b.dataset.team, b.dataset.role);
   });
+  $("botSel").addEventListener("change", function () { setSetting({ bot: $("botSel").value || null }); });
   $("levelSel").addEventListener("change", function () { setSetting({ level: $("levelSel").value }); });
   $("timerSel").addEventListener("change", function () { setSetting({ timer: parseInt($("timerSel").value, 10) || 0 }); });
   $("rotateChk").addEventListener("change", function () { setSetting({ rotate: $("rotateChk").checked }); });
