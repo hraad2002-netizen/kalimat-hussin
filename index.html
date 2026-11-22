@@ -163,8 +163,19 @@ ul.pl li { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; over
 .counts span { padding: 0 10px; border-radius: 99px; background: var(--surface); color: var(--fg); }
 .counts .cr { border: 2px solid var(--red); } .counts .cb { border: 2px solid var(--blue); }
 
-.cluebox { text-align: center; font-size: 18px; }
-.cluebox b { font-family: var(--display); font-size: 26px; }
+.cluebox { text-align: center; font-size: 20px; padding: 16px 12px; border-radius: 16px; background: var(--surface-2); border: 3px solid var(--line); line-height: 1.5; }
+.cluebox.t-r { background: var(--red-soft); border-color: var(--red); }
+.cluebox.t-b { background: var(--blue-soft); border-color: var(--blue); }
+.cluebox .cl-lbl { font-size: 15px; color: var(--muted); font-weight: 700; }
+.cluebox .cl-word { display: block; font-family: var(--body); font-weight: 800; font-size: clamp(38px, 12vw, 60px); line-height: 1.2; color: var(--fg); letter-spacing: 0; word-break: break-word; }
+.cluebox .cl-num { display: inline-block; margin-top: 6px; min-width: 56px; padding: 2px 16px; border-radius: 99px; background: var(--fg); color: var(--bg); font-weight: 800; font-size: 30px; font-variant-numeric: tabular-nums; }
+.rosters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.roster { border-radius: 12px; padding: 8px 10px; border: 2px solid var(--line); background: var(--surface); min-width: 0; }
+.roster.t-r { border-color: var(--red); } .roster.t-b { border-color: var(--blue); }
+.roster h4 { margin: 0 0 4px; font-family: var(--display); font-size: 16px; }
+.roster.t-r h4 { color: var(--red); } .roster.t-b h4 { color: var(--blue); }
+.roster ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
+.roster li { overflow-wrap: anywhere; } .roster li.me { font-weight: 800; }
 
 .grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; perspective: 900px; }
 .card {
@@ -334,6 +345,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     <div id="board" hidden style="margin-top:16px; display:flex; flex-direction:column; gap:12px">
       <div id="turnBar" class="turnbar"><span id="turnTxt"></span><span id="timerTxt" class="timer"></span><span class="counts"><span class="cr" id="cntR"></span><span class="cb" id="cntB"></span></span></div>
       <p id="meLine" class="status"></p>
+      <div id="rosters" class="rosters"></div>
       <div id="clueBox" class="cluebox" hidden></div>
       <div id="winBanner" class="banner" hidden></div>
       <ul id="awards" class="awards" hidden></ul>
@@ -658,12 +670,12 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
         phase: "play", words: words, key: key, revealed: words.map(function () { return false; }),
         turn: first, first: first, clue: null, left: 0, winner: null, why: null, last: null,
         log: ["بدأت الجولة. يبدأ الفريق " + TEAM[first] + ". الله يستر!"],
-        round: (g.round || 0) + 1, test: !!(test || g.test),
+        round: (g.round || 0) + 1, test: !!(test || (rematch && g.test)),
         phaseEnds: endsAtFor(g), expireAt: expireTs(48 * 3600 * 1000)
       };
       if (test) upd.rotate = false;
       upd.stats = {}; upd.late = {};
-      var isTest = !!(test || g.test);
+      var isTest = !!(test || (rematch && g.test));
       upd.spies = null;
       if (!isTest) {
         var sp = {};
@@ -922,12 +934,24 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
 
     var cb = $("clueBox");
     if (g.clue && !over) {
-      cb.hidden = false; cb.textContent = "";
-      cb.appendChild(document.createTextNode("التلميح: "));
-      cb.appendChild(el("b", "", g.clue.word));
-      cb.appendChild(document.createTextNode(" · " + g.clue.num + (g.clue.num === 0 ? " (بلا حد)" : "")));
+      cb.hidden = false; cb.textContent = ""; cb.className = "cluebox t-" + g.turn;
+      cb.appendChild(el("span", "cl-lbl", "التلميح"));
+      cb.appendChild(el("b", "cl-word", g.clue.word));
+      cb.appendChild(el("span", "cl-num", g.clue.num === 0 ? "∞" : String(g.clue.num)));
       cb.appendChild(el("div", "small muted", g.left > 90 ? "تخمينات غير محدودة" : "المتبقي من التخمينات: " + g.left));
     } else cb.hidden = true;
+
+    var rs = $("rosters"); rs.textContent = "";
+    ["b", "r"].forEach(function (t) {
+      var d = el("div", "roster t-" + t); d.appendChild(el("h4", "", "الفريق " + TEAM[t]));
+      var ul = el("ul"), ids = members(t);
+      if (!ids.length) ul.appendChild(el("li", "muted", "—"));
+      ids.forEach(function (id) {
+        var nm = (players[id].name || "لاعب") + (roleOf(id) === "s" ? " 🕵️ قائد" : "");
+        ul.appendChild(el("li", id === uid ? "me" : "", nm));
+      });
+      d.appendChild(ul); rs.appendChild(d);
+    });
 
     var wb = $("winBanner");
     if (over) {
