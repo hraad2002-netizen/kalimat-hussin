@@ -307,7 +307,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
       </div>
       <div class="row">
         <div class="field grow"><label for="levelSel">الصعوبة</label>
-          <select id="levelSel"><option value="easy">سهل (كلمات متفرقة)</option><option value="normal">عادي</option><option value="hard">صعب (كلمات متقاربة)</option></select></div>
+          <select id="levelSel"><option value="easy">سهل (كل ٣ كلمات تربطها كلمة وحدة)</option><option value="normal">عادي (كلمات تتزاوج)</option><option value="hard">صعب (كلمات متقاربة)</option></select></div>
         <div class="field grow"><label for="timerSel">مؤقت الدور</label>
           <select id="timerSel"><option value="0">بدون</option><option value="60">60 ثانية</option><option value="90">90 ثانية</option><option value="120">120 ثانية</option></select></div>
       </div>
@@ -392,7 +392,8 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     { id: "cities", name: "🏙️ مدن عراقية", theme: true, w: "البصرة الموصل أربيل النجف كربلاء كركوك السليمانية الأنبار ديالى واسط ميسان دهوك سامراء بابل الحلة الناصرية العمارة الكوت بغداد" },
     { id: "social", name: "📱 سوشيال ميديا", theme: true, w: "واتساب تلغرام فيسبوك إنستغرام تيكتوك يوتيوب ستوري بث متابع لايك تعليق هاشتاغ إشعار رسالة مجموعة سيلفي ترند فيديو" },
     { id: "jobs", name: "👷 مهن", theme: true, w: "طباخ نجار حداد خياط سائق معلم مهندس محاسب صيدلي حلاق خباز فلاح صياد راعي بائع رسام مصور مذيع كاتب" },
-    { id: "hunter", name: "🏹 تيم الصياد", theme: true, all: true, l: ["عجينة", "الصياد", "دراكون", "ابوشبوكي", "خشوب", "باندا", "انفور", "حسن هاشم", "حمودي اياد"] }
+    { id: "hunter", name: "🏹 تيم الصياد", theme: true, all: true, l: ["عجينة", "الصياد", "دراكون", "ابوشبوكي", "خشوب", "باندا", "انفور", "حسن هاشم", "حمودي اياد"] },
+    { id: "lab", name: "🥼 مختبرنا", theme: true, all: true, l: ["حسين رعد🦁", "حسن عامر 🐅", "بنين 🐼", "زهراء 🐨", "نبأ 🦄", "صورة دم", "بكتيريا", "ادرار", "طباعة", "يوريا", "كبد", "كلى", "سحب دم", "ابرة 💉", "كب ادرار", "زرع 🧫", "غدة", "ثايرود", "بيليروبين", "فاهية", "مجاملة", "انفعالي", "ابو خابصهة", "شايفة نفسهة", "كونترول", "كالبريشين"] }
   ].map(function (c) { return { id: c.id, name: c.name, theme: !!c.theme, all: !!c.all, words: c.l || c.w.split(/\s+/) }; });
   var LEVELS = { easy: { t: 8, p: 3 }, normal: { t: 5, p: 4 }, hard: { t: 3, p: 7 } };
 
@@ -443,24 +444,50 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
 
   /* Board words come from a few themes, so one clue can fit several tiles and some of them belong to the other team. */
   function pickWords(custom, catIds, level) {
-    var cfg = LEVELS[level] || LEVELS.normal, used = {}, out = [];
-    function add(w) { if (!used[w] && out.length < 25) { used[w] = 1; out.push(w); return true; } return false; }
-    shuffle(custom).slice(0, 25).forEach(add);
+    var cfg = LEVELS[level] || LEVELS.normal, used = {}, out = [], groups = [], cur = null;
+    function open() { cur = []; groups.push(cur); }
+    function add(w) { if (!used[w] && out.length < 25) { used[w] = 1; out.push(w); cur.push(w); return true; } return false; }
+    open(); shuffle(custom).slice(0, 25).forEach(add);
     var chosen = CATS.filter(function (c) { return catIds.indexOf(c.id) >= 0; });
     /* a "team" theme puts all of its words on the board, then the rest come from the other chosen groups */
-    chosen.filter(function (c) { return c.all; }).forEach(function (c) { c.words.forEach(add); });
+    chosen.filter(function (c) { return c.all; }).forEach(function (c) { open(); (c.words.length > 25 ? shuffle(c.words) : c.words).forEach(add); });
     chosen = chosen.filter(function (c) { return !c.all; });
     if (!chosen.length) chosen = CATS.filter(function (c) { return !c.theme; });
     var cats = shuffle(chosen), ci = 0;
     while (out.length < 25 && ci < cats.length) {
       var want = ci < cfg.t ? cfg.p : 1, got = 0;
+      open();
       shuffle(cats[ci].words).forEach(function (w) { if (got < want && add(w)) got++; });
       ci++;
     }
     var flat = function (list) { return list.reduce(function (a, c) { return a.concat(c.words); }, []); };
+    open();
     if (out.length < 25) shuffle(flat(chosen)).forEach(add);
     if (out.length < 25) shuffle(flat(CATS)).forEach(add);
-    return shuffle(out);
+    return { words: shuffle(out), groups: groups.filter(function (g) { return g.length; }) };
+  }
+
+  /* Colours for the 25 words. On easy/normal, related words are given to the same team in clusters, so a spymaster can link 2-3 words with one clue. */
+  function makeKey(picked, first, level) {
+    var other = first === "r" ? "b" : "r", colors = [], i;
+    for (i = 0; i < 9; i++) colors.push(first);
+    for (i = 0; i < 8; i++) colors.push(other);
+    for (i = 0; i < 7; i++) colors.push("n");
+    colors.push("a");
+    var size = level === "easy" ? 3 : level === "normal" ? 2 : 1;
+    if (size === 1) return { words: picked.words, key: shuffle(colors) };
+    var pieces = [];
+    picked.groups.forEach(function (g) {
+      var w = shuffle(g);
+      while (w.length) pieces.push(w.splice(0, size));
+    });
+    pieces = shuffle(pieces).sort(function (a, b) { return b.length - a.length; });
+    /* big clusters go to the two teams, loners fall to neutral and the assassin */
+    var top = pieces.filter(function (p) { return p.length > 1; }), lone = pieces.filter(function (p) { return p.length === 1; });
+    var seq = shuffle(top).reduce(function (a, p) { return a.concat(p); }, []).concat(lone.reduce(function (a, p) { return a.concat(p); }, []));
+    var pairs = seq.map(function (w, k) { return [w, colors[k]]; });
+    pairs = shuffle(pairs);
+    return { words: pairs.map(function (x) { return x[0]; }), key: pairs.map(function (x) { return x[1]; }) };
   }
 
   /* ---------- sound, vibration, attention ---------- */
@@ -536,7 +563,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
       if (!c) { toast("تعذّر إنشاء رمز. جرّب مرة ثانية."); return; }
       await db.doc("games/" + c).set({
         code: c, hostId: uid, phase: "lobby", round: 0, custom: [], cats: allCatIds(), level: "normal", timer: 0,
-        rotate: true, test: false, score: { r: 0, b: 0 }, last: null, at: Date.now(), expireAt: expireTs(48 * 3600 * 1000)
+        rotate: false, test: false, score: { r: 0, b: 0 }, last: null, at: Date.now(), expireAt: expireTs(48 * 3600 * 1000)
       });
       await enter(c, name);
     } catch (e) { fail(e); } finally { setReady(); }
@@ -622,15 +649,9 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     if (busy || !game) return; busy = true;
     try {
       var g = game;
-      var words = pickWords(g.custom || [], g.cats || allCatIds(), g.level || "normal");
       var first = rematch ? (g.first === "r" ? "b" : "r") : (Math.random() < 0.5 ? "r" : "b");
-      var other = first === "r" ? "b" : "r";
-      var key = [];
-      for (var i = 0; i < 9; i++) key.push(first);
-      for (i = 0; i < 8; i++) key.push(other);
-      for (i = 0; i < 7; i++) key.push("n");
-      key.push("a");
-      key = shuffle(key);
+      var mk = makeKey(pickWords(g.custom || [], g.cats || allCatIds(), g.level || "normal"), first, g.level || "normal");
+      var words = mk.words, key = mk.key;
       var upd = {
         phase: "play", words: words, key: key, revealed: words.map(function () { return false; }),
         turn: first, first: first, clue: null, left: 0, winner: null, why: null, last: null,
@@ -834,7 +855,7 @@ body{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(40px,
     $("startBtn").disabled = !ready;
     $("startHint").textContent = ready ? "" : (rotating()
       ? "كل فريق يحتاج لاعبين اثنين على الأقل (قائد وعميل). والقائد يتبدل كل جولة."
-      : "لازم يكون لكل فريق قائد قبل البدء.");
+      : "كل فريق يختار قائد واحد (زر «قائد») والباقي يضغطون «عميل». بعد البدء الأدوار تنقفل.");
   }
   function parseCustom() {
     return uniq($("customIn").value.split(/[\n,،]+/).map(function (x) { return x.trim(); }).filter(Boolean)).slice(0, 60);
